@@ -1,58 +1,27 @@
-# React + TypeScript + Vite
+# vite-template-redux
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Uses [Vite](https://vitejs.dev/), [Vitest](https://vitest.dev/), and [React Testing Library](https://github.com/testing-library/react-testing-library) to create a modern [React](https://react.dev/) app compatible with [Create React App](https://create-react-app.dev/)
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```sh
+npx degit reduxjs/redux-templates/packages/vite-template-redux my-app
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Goals
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+- Easy migration from Create React App or Vite
+- As beginner friendly as Create React App
+- Optimized performance compared to Create React App
+- Customizable without ejecting
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## Scripts
 
+- `dev`/`start` - start dev server and open browser
+- `build` - build for production
+- `preview` - locally preview production build
+- `test` - launch test runner
 
-# Run
-```
-  cd frontend
-  npm install
-  npm run dev
-```
+## Inspiration
+
+- [Create React App](https://github.com/facebook/create-react-app/tree/main/packages/cra-template)
+- [Vite](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react)
+- [Vitest](https://github.com/vitest-dev/vitest/tree/main/examples/react-testing-lib)
