@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const { csrfProtection, asyncHandler } = require("./utils");
+const { csrfProtection, asyncHandler } = require("../utils");
 const { check, validationResult } = require("express-validator");
-const { requireAuth } = require("../auth");
-const db = require("../db/models");
+const { requireAuth } = require("../../auth");
+const db = require("../../db/models");
 
 const checkPermissions = (answer, currentUser) => {
   if (answer.userId !== currentUser.id) {

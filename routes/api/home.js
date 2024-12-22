@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { asyncHandler } = require("./utils");
-const db = require("../db/models");
+const { asyncHandler } = require("../utils");
+const db = require("../../db/models");
 const { Question, Topic, User } = db;
 
 //GET TEN COMMENTS - (BONUS order them by popularity)

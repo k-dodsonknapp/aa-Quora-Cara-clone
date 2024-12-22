@@ -1,17 +1,15 @@
 import "./App.css"
 import { BrowserRouter, Routes, Route } from "react-router-dom"
-import Login from "./features/Login/Login"
+import Home from "./pages/Home"
+import Login from "./pages/Login"
 
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login/>}>
-          {/* <Route index element={<Home />} />
-          <Route path="blogs" element={<Blogs />} />
-          <Route path="contact" element={<Contact />} />
-          <Route path="*" element={<NoPage />} /> */}
-        </Route>
+        <Route path="/" element={<Login />} />
+        {/* TODO - Protect home route */}
+        <Route path="/home" element={<Home />} />
       </Routes>
     </BrowserRouter>
   )

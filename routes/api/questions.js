@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
-const { csrfProtection, asyncHandler } = require("./utils");
+const { csrfProtection, asyncHandler } = require("../utils");
 const { check, validationResult } = require("express-validator");
-const { requireAuth } = require("../auth")
+const { requireAuth } = require("../../auth")
 
-const db = require("../db/models");
+const db = require("../../db/models");
 const { Question, Answer, Comment, Topic, User } = db
 
 //ensures that the owner of the resource is the only one that can edit/delete
