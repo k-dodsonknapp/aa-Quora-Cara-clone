@@ -24,6 +24,21 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser(secret));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// CORS middleware setup
+app.use(cors({
+  origin: function (origin, callback) {
+    const allowedOrigins = ['http://localhost:5173', "http://127.0.0.1:5173"]; // React dev server URL
+    if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ''))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'XSRF-TOKEN', 'Authorization', 'Cookie'],
+  credentials: true
+}));
+
 app.use(
   csurf({
     cookie: {
@@ -33,21 +48,6 @@ app.use(
     },
   })
 );
-
-// CORS middleware setup
-app.use(cors({
-  origin: function (origin, callback) {
-    const allowedOrigins = ['http://localhost:5173']; // React dev server URL
-    if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ''))) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'XSRF-Token', 'Authorization', 'Cookie'],
-  credentials: true
-}));
 
 // Session setup with Sequelize store
 const store = new SequelizeStore({ db: sequelize });

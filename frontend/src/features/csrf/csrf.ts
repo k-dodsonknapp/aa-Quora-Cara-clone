@@ -3,7 +3,7 @@ import Cookies from "js-cookie"
 // DEVELOPMENT
 // Call this to get the "XSRF-TOKEN" cookie, should only be used in development
 export function restoreCSRF(): Promise<Response> {
-  return csrfFetch("/api/csrf/restore")
+  return csrfFetch("http://localhost:8080/api/csrf/restore")
 }
 type FetchOptions = {
   method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
@@ -12,7 +12,7 @@ type FetchOptions = {
   credentials?: "include" | "same-origin" | "omit"
 }
 
-// Enhanced csrfFetch function with TypeScript support
+
 export async function csrfFetch(
   url: string,
   options: FetchOptions = {},
@@ -23,13 +23,13 @@ export async function csrfFetch(
   // Initialize headers if not already present
   options.headers = options.headers || {}
 
-  // For non-GET requests, set Content-Type and XSRF-Token headers
+  // For non-GET requests, set Content-Type and XSRF-TOKEN headers
   if (options.method.toUpperCase() !== "GET") {
     options.headers["Content-Type"] =
       options.headers["Content-Type"] || "application/json"
-    options.headers["XSRF-Token"] = Cookies.get("XSRF-TOKEN") || ""
+    options.headers["XSRF-TOKEN"] = Cookies.get("XSRF-TOKEN") || ""
   }
-
+  options.credentials = "include"
   // Perform the fetch request
   const res = await window.fetch(url, options)
 

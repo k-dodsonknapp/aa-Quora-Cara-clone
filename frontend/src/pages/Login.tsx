@@ -1,79 +1,69 @@
 import { useState } from "react"
 import type React from "react"
-import { csrfFetch } from "../features/csrf/csrf"
+import { csrfFetch, restoreCSRF } from "../features/csrf/csrf"
 import { useNavigate } from "react-router-dom"
+import { useAppDispatch } from "../app/hooks"
+import { useAppSelector } from "../app/hooks"
+import type { RootState } from "../app/store"
+import { loginAsync } from "../features/session/sessionSlice"
+import Cookies from "js-cookie"
 
-interface LoginFormData {
+export type LoginCredentials = {
   email: string
   password: string
 }
 
 function Login() {
   const navigate = useNavigate()
-  const [formData, setFormData] = useState<LoginFormData>({
+  const dispatch = useAppDispatch()
+  const [credentials, setCredentials] = useState<LoginCredentials>({
     email: "",
     password: "",
   })
-  const [errors, setErrors] = useState<string[]>([])
-  const [loading, setLoading] = useState<boolean>(false)
+
+  const status = useAppSelector((state: RootState) => state.session.status)
+  const error = useAppSelector((state: RootState) => state.session.error)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData({
-      ...formData,
+    setCredentials({
+      ...credentials,
       [name]: value,
     })
   }
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-
-    setLoading(true)
-    try {
-      const response = await csrfFetch("http://localhost:8080/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-        credentials: "include",
+    restoreCSRF()
+      .then(res => res.json())
+      .then(res => {
+        Cookies.set("XSRF-TOKEN", res.cookie)
       })
+    try {
+      await dispatch(loginAsync(credentials)).unwrap()
 
-      const result = await response.json()
-
-      if (response.ok) {
-        if (result.authenticated) {
-          navigate("home")
-        }
-        setErrors([])
-      } else {
-        console.log("Login failed", result)
-        setErrors(result.errors || ["Login failed."])
-      }
+      navigate("/home")
     } catch (err) {
-      console.error("Error during login", err)
-      setErrors(["An unexpected error occurred"])
-    } finally {
-      setLoading(false) // Stop loading indicator
+      console.error("Login failed:", error)
     }
   }
 
   return (
     <div>
       <h2>Login</h2>
-      {errors.length > 0 && (
+      {/* {errors.length > 0 && (
         <ul>
           {errors.map((error, index) => (
             <li key={index}>{error}</li>
           ))}
         </ul>
-      )}
+      )} */}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Email:</label>
           <input
             type="email"
             name="email"
-            value={formData.email}
+            value={credentials.email}
             onChange={handleChange}
             required
           />
@@ -83,15 +73,16 @@ function Login() {
           <input
             type="password"
             name="password"
-            value={formData.password}
+            value={credentials.password}
             onChange={handleChange}
             required
           />
         </div>
         <div>
-          <button type="submit" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
+          <button type="submit" disabled={status === "loading"}>
+            {status === "loading" ? "Logging in..." : "Login"}
           </button>
+          {status === "failed" && error && <div>{error}</div>}
         </div>
       </form>
     </div>
