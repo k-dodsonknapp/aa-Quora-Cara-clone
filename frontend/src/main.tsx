@@ -18,11 +18,8 @@ const container = document.getElementById("root")
 
 if (process.env.NODE_ENV !== "production") {
   restoreCSRF()
-
   window.csrfFetch = csrfFetch
   window.store = store
-  // TODO need to setup store for session
-  // window.sessionActions = sessionActions
 }
 
 if (container) {

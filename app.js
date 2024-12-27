@@ -27,7 +27,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // CORS middleware setup
 app.use(cors({
   origin: function (origin, callback) {
-    const allowedOrigins = ['http://localhost:5173', "http://127.0.0.1:5173"]; // React dev server URL
+    const allowedOrigins = ['http://localhost:5173'];
     if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ''))) {
       callback(null, true);
     } else {
