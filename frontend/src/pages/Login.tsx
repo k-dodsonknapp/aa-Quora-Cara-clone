@@ -40,7 +40,6 @@ function Login() {
       })
     try {
       await dispatch(loginAsync(credentials)).unwrap()
-
       navigate("/home")
     } catch (err) {
       console.error("Login failed:", error)
@@ -50,13 +49,7 @@ function Login() {
   return (
     <div>
       <h2>Login</h2>
-      {/* {errors.length > 0 && (
-        <ul>
-          {errors.map((error, index) => (
-            <li key={index}>{error}</li>
-          ))}
-        </ul>
-      )} */}
+      {status === "failed" && error && <div>{error}</div>}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Email:</label>
@@ -82,7 +75,6 @@ function Login() {
           <button type="submit" disabled={status === "loading"}>
             {status === "loading" ? "Logging in..." : "Login"}
           </button>
-          {status === "failed" && error && <div>{error}</div>}
         </div>
       </form>
     </div>

@@ -46,7 +46,10 @@ export const sessionSlice = createAppSlice({
         },
         rejected: (state, action) => {
           state.status = "failed"
-          state.error = action.payload as string
+          state.error =
+            action.error.message?.toString() ||
+            "An unexpected error occurred. Please try again."
+          state.isAuthenticated = false
         },
       },
     ),

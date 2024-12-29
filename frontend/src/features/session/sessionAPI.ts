@@ -11,12 +11,16 @@ export const fetchLogin = async (credentials: LoginCredentials) => {
     body: JSON.stringify(credentials),
     credentials: "include",
   })
-
+  const data = await response.json()
   if (!response.ok) {
-    throw new Error(`Login failed. Status code: ${response.status}`)
+    const errorMessage =
+      data.errors?.length > 0
+        ? data.errors[0]
+        : ["An error occurred. Please try again."]
+
+    throw new Error(errorMessage)
   }
 
-  const data = await response.json()
   return data.user
 }
 

@@ -133,31 +133,39 @@ router.post('/login', csrfProtection, userLoginValidators, asyncHandler(async fu
   const { email, password } = req.body;
   const foundUser = await User.findOne({ where: { email } })
 
-  const user = {
-    email
-  };
-
+  const errors = [];
 
   const validatorCheck = validationResult(req);
-  const errors = validatorCheck.array().map(error => error.msg);
+  if (!validatorCheck.isEmpty()) {
+    validatorCheck.array().map(error => errors.push(error.msg));
+  }
 
-  if (!errors[0]) {
+  if (errors.length === 0 && foundUser) {
     const hashedPassword = foundUser.hashedPassword;
     const passwordTest = await bcrypt.compare(password, hashedPassword.toString());
+
     if (passwordTest) {
       loginUser(req, res, foundUser)
     } else {
       errors.push('Login credentials invalid.')
     }
+  } else if (!foundUser) {
+    errors.push('Invalid email or password.');
   }
-  if (errors[0]) {
-    res.json({
-      user,
+
+  if (errors.length > 0) {
+    return res.status(401).json({
+      user: { email },
       title: 'Login',
       errors,
       csrfToken: req.csrfToken()
     });
   }
+
+  res.status(200).json({
+    user: { email: foundUser.email },
+    csrfToken: req.csrfToken(),
+  })
 }));
 
 router.post('/logout', (req, res) => {

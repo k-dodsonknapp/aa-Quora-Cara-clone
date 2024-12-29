@@ -34,7 +34,15 @@ export async function csrfFetch(
   const res = await window.fetch(url, options)
 
   // If the response status is 400 or higher, throw the response object
-  if (res.status >= 400) throw res
+  if (res.status >= 400) {
+    const data = await res.json()
+    const errorMessage =
+      data.errors?.length > 0
+        ? data.errors[0]
+        : "An error occurred. Please try again."
+
+    throw new Error(errorMessage)
+  }
 
   // Return the response object if no errors
   return res
