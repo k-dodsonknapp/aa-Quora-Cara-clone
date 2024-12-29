@@ -118,7 +118,7 @@ const userLoginValidators = [
       return User.findOne({ where: { email: value } }).then((user) => {
         if (!user) {
           return Promise.reject(
-            "'Login credentials invalid.'"
+            'Login credentials invalid.'
           );
         }
       })
@@ -155,21 +155,20 @@ router.post('/login', csrfProtection, userLoginValidators, asyncHandler(async fu
 
   if (errors.length > 0) {
     return res.status(401).json({
-      user: { email },
-      title: 'Login',
       errors,
       csrfToken: req.csrfToken()
     });
   }
 
   res.status(200).json({
-    user: { email: foundUser.email },
+    authenticated: true,
+    user: { id: foundUser.id, email: foundUser.email, username: foundUser.username },
     csrfToken: req.csrfToken(),
   })
 }));
 
-router.post('/logout', (req, res) => {
+router.post('/logout', asyncHandler(async function (req, res) {
   logoutUser(req, res);
-});
+}));
 
 module.exports = router;

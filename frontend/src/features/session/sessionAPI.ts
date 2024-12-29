@@ -31,5 +31,4 @@ export const fetchLogout = async () => {
   if (!response.ok) {
     throw new Error(`Logout failed. Status code: ${response.status}`)
   }
-  restoreCSRF()
 }

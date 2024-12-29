@@ -63,10 +63,9 @@ app.use(
 
 // Sync session store
 store.sync();
-app.use(restoreUser);
-
 // Use API routes
 app.use(routes);
+app.use(restoreUser);
 
 // Catch 404 errors
 app.use(function (req, res, next) {
