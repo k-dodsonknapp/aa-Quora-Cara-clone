@@ -1,9 +1,9 @@
 const express = require('express')
 
 
-const { Question } = require("../db/models");
+const { Question } = require("../../db/models");
 const { Op } = require('sequelize');
-const { asyncHandler } = require("./utils");
+const { asyncHandler } = require("../utils");
 const router = express.Router();
 
 async function search(word) {

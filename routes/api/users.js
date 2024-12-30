@@ -1,8 +1,8 @@
 const express = require('express');
-const { User } = require('../db/models')
+const { User } = require('../../db/models')
 const { check, validationResult } = require('express-validator');
-const { csrfProtection, asyncHandler, bcrypt } = require('./utils');
-const { loginUser, logoutUser } = require('../auth')
+const { csrfProtection, asyncHandler, bcrypt } = require('../utils');
+const { loginUser, logoutUser } = require('../../auth')
 
 const router = express.Router();
 
@@ -93,14 +93,22 @@ router.post('/users/register', csrfProtection, userValidators, asyncHandler(asyn
   }
 }));
 
-router.get('/', csrfProtection, asyncHandler(async function (req, res, next) {
-  const user = await User.build();
-  res.render('login', {
-    user,
-    title: 'Login',
-    csrfToken: req.csrfToken()
-  });
-}));
+// router.get('/', csrfProtection, asyncHandler(async function (req, res, next) {
+//   const user = await User.build();
+//   const csrfToken = req.csrfToken();
+//   res.cookie('XSRF-TOKEN', csrfToken, {
+//     httpOnly: false, // Allow access via JavaScript (so we can use it in the frontend)
+//     secure: process.env.NODE_ENV === 'production', // Set to true in production for HTTPS
+//     sameSite: 'Lax', // Or 'Strict' depending on your needs (for CSRF protection)
+//     maxAge: 60 * 60 * 1000, // Optional: Expiry time for the cookie (1 hour in this case)
+//   });
+
+//   res.json({
+//     user,
+//     title: 'Login',
+//     csrfToken: csrfToken
+//   });
+// }));
 
 const userLoginValidators = [
   check('email')
@@ -110,7 +118,7 @@ const userLoginValidators = [
       return User.findOne({ where: { email: value } }).then((user) => {
         if (!user) {
           return Promise.reject(
-            "'Login credentials invalid.'"
+            'Login credentials invalid.'
           );
         }
       })
@@ -121,40 +129,46 @@ const userLoginValidators = [
 ];
 
 
-router.post('/', csrfProtection, userLoginValidators, asyncHandler(async function (req, res) {
+router.post('/login', csrfProtection, userLoginValidators, asyncHandler(async function (req, res) {
   const { email, password } = req.body;
   const foundUser = await User.findOne({ where: { email } })
 
-  const user = {
-    email
-  };
-
+  const errors = [];
 
   const validatorCheck = validationResult(req);
-  const errors = validatorCheck.array().map(error => error.msg);
+  if (!validatorCheck.isEmpty()) {
+    validatorCheck.array().map(error => errors.push(error.msg));
+  }
 
-  if (!errors[0]) {
+  if (errors.length === 0 && foundUser) {
     const hashedPassword = foundUser.hashedPassword;
-    const passwordTest = await bcrypt.compare(password, foundUser.hashedPassword.toString());
+    const passwordTest = await bcrypt.compare(password, hashedPassword.toString());
+
     if (passwordTest) {
       loginUser(req, res, foundUser)
-      return res.redirect("/home");
     } else {
       errors.push('Login credentials invalid.')
     }
+  } else if (!foundUser) {
+    errors.push('Invalid email or password.');
   }
-  if (errors[0]) {
-    res.render('login', {
-      user,
-      title: 'Login',
+
+  if (errors.length > 0) {
+    return res.status(401).json({
       errors,
       csrfToken: req.csrfToken()
     });
   }
+
+  res.status(200).json({
+    authenticated: true,
+    user: { id: foundUser.id, email: foundUser.email, username: foundUser.username },
+    csrfToken: req.csrfToken(),
+  })
 }));
 
-router.post('/logout', (req, res) => {
+router.post('/logout', asyncHandler(async function (req, res) {
   logoutUser(req, res);
-});
+}));
 
 module.exports = router;

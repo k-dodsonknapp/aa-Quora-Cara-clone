@@ -6,28 +6,50 @@ const logger = require('morgan');
 const { sequelize } = require('./db/models');
 const session = require('express-session');
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
-const homeRouter = require("./routes/home")
-const usersRouter = require('./routes/users');
-const questionsRouter = require('./routes/questions')
-const answersRouter = require('./routes/answers')
-const commentsRouter = require('./routes/comments')
-const topicRouter = require('./routes/topics')
-const searchRouter = require('./routes/search')
-const { secret } = require('./config')
-const { restoreUser } = require('./auth')
+const { secret } = require('./config');
+const { restoreUser } = require('./auth');
+const cors = require('cors');
+const routes = require('./routes');
+const { environment } = require('./config');
+const isProduction = environment === 'production';
+const csurf = require('csurf');
+
 
 const app = express();
 
-// view engine setup
-app.set('view engine', 'pug');
-
+// Middleware for logging, JSON parsing, cookies, etc.
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser(secret));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// set up session middleware
+// CORS middleware setup
+app.use(cors({
+  origin: function (origin, callback) {
+    const allowedOrigins = ['http://localhost:5173'];
+    if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ''))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'XSRF-TOKEN', 'Authorization', 'Cookie'],
+  credentials: true
+}));
+
+app.use(
+  csurf({
+    cookie: {
+      secure: isProduction,
+      sameSite: isProduction && "Lax",
+      httpOnly: true,
+    },
+  })
+);
+
+// Session setup with Sequelize store
 const store = new SequelizeStore({ db: sequelize });
 
 app.use(
@@ -39,33 +61,33 @@ app.use(
   })
 );
 
-// create Session table if it doesn't already exist
+// Sync session store
 store.sync();
-app.use(restoreUser)
-app.use(homeRouter) // --> /home
-app.use(usersRouter);
-app.use(questionsRouter)
-app.use(answersRouter)
-app.use(commentsRouter);
-app.use(topicRouter);
-app.use(searchRouter);
+// Use API routes
+app.use(routes);
+app.use(restoreUser);
 
-
-// catch 404 and forward to error handler
+// Catch 404 errors
 app.use(function (req, res, next) {
   next(createError(404));
 });
 
-// error handler
+// Error handler
 app.use(function (err, req, res, next) {
-  console.log(err)
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  console.log(err);
 
-  // render the error page
   res.status(err.status || 500);
-  res.render('error');
+
+  // Send JSON response with error details in development
+  if (req.app.get('env') === 'development') {
+    return res.json({
+      message: err.message,
+      error: err
+    });
+  }
+
+  // Send generic message for production
+  return res.json({ message: 'Something went wrong!' });
 });
 
 module.exports = app;
